@@ -129,3 +129,92 @@ system.time(gapminderlarger <- read_feather(path)) #2.344 user, 2.414s elapsed
 #feather: 5.008s
 
 #Manipulating Data Tables
+gapminderFiveYearData <- fread("gapminder-FiveYearData.csv", data.table=T)
+class(gapminderFiveYearData)
+#pretend it's a data frame
+gapminderFiveYearData[1,]
+colnames(gapminderFiveYearData)
+gapminderFiveYearData$country
+#Data Table "Natural" Syntax
+#...although suspiciously similar to SQL?
+#DT[where, select|update|do, by]
+#Chaining Queries
+#DT[][]
+#Formally: DT[i, j, by]
+
+#I: row selection
+gapminderFiveYearData[c(1:5, 100:105),] #by number
+gapminderFiveYearData[gapminderFiveYearData$country=="New Zealand",] #by condition
+gapminderFiveYearData[gapminderFiveYearData$country %in% c("New Zealand", "Australia", "Japan"),] #by condition
+gapminderFiveYearData[year=="1952"]
+#J: column selection
+gapminderFiveYearData[,"country"] #by names
+gapminderFiveYearData[,gapminderFiveYearData$country %in% c("New Zealand", "Australia", "Japan")] #by condition
+#operation on columns
+gapminderFiveYearData[,sum(gdpPercap)] #by colnames
+gapminderFiveYearData[,sum(gdpPercap*pop)] #by colnames
+gapminderFiveYearData[,mean(pop)] #by colnames
+gapminderFiveYearData[,mean(lifeExp)] #by colnames
+#BY: group operation
+gapminderFiveYearData[j=sum(gdpPercap), by=year]
+gapminderFiveYearData[,sum(gdpPercap), year]
+gapminderFiveYearData[,mean(lifeExp), year]
+gapminderFiveYearData[,sum(pop), by=list(continent, year)]
+library("gplots")
+plot(gapminderFiveYearData[,sum(pop), by=list(continent, year)]$year,
+     gapminderFiveYearData[,sum(pop), by=list(continent, year)]$V1,
+     col=rainbow(5)[as.numeric(as.factor(gapminderFiveYearData[,sum(pop), by=list(continent, year)]$continent))])
+legend("topleft", fill=rainbow(5), legend=levels(as.factor(gapminderFiveYearData[,sum(pop), by=list(continent, year)]$continent)))
+#New and Shiny: by=.EACHI
+gapminderFiveYearData[year=="1952" | year=="2002", j=sum(pop), by=year]
+gapminderFiveYearData[c("New Zealand","Australia"),sum(gdpPercap*pop)]
+gapminderFiveYearData[c("New Zealand","Australia"),sum(gdpPercap*pop), by=year]
+gapminderFiveYearData[c("New Zealand","Australia"),sum(gdpPercap*pop), by=.EACHI]
+gapminderFiveYearData[c("New Zealand","Australia"),sum(gdpPercap*pop), by=list(year, country)]
+#total rows (new behaviour)
+gapminderFiveYearData[c("New Zealand","Australia"), .N] #count number of rows
+#total rows (once default behaviour): implicit by
+gapminderFiveYearData[c("New Zealand","Australia"), .N, by=.EACHI] #count number of rows (for each I)
+
+#tables() shows all tables and their SQL-like "keys"
+tables()
+rowID <- paste(gapminderFiveYearData$country, gapminderFiveYearData$year)
+rowID
+gapminderFiveYearData$rowID <- rowID
+gapminderFiveYearData
+setkey(gapminderFiveYearData, rowID)
+tables()
+gapminderFiveYearData["New Zealand 1952",] #search row by key
+setkey(gapminderFiveYearData, country) # duplicate keys permitted (compare to dataframe: rownames)
+gapminderFiveYearData["New Zealand",] #alls rows returned by default (rather than only first for dataframe)
+#mult="first" or "last" or each group
+gapminderFiveYearData["New Zealand", mult="first"] 
+gapminderFiveYearData["New Zealand", mult="last"] 
+
+#queries in data.tables aren't just *easier* they're **faster**
+gapminderFiveYearData["New Zealand", mult="first"] 
+system.time(gapminderFiveYearData["New Zealand", mult="first"]) #time 0.001s
+gapminderFiveYearData.dataframe <- as.data.frame(gapminderFiveYearData)
+gapminderFiveYearData.dataframe[gapminderFiveYearData.dataframe$country=="New Zealand",][1,]
+system.time(gapminderFiveYearData.dataframe[gapminderFiveYearData.dataframe$country=="New Zealand",][1,]) #0.001s
+
+setkey(gapminderlarger, country)
+gapminderlarger["New Zealand", mult="first"] 
+system.time(gapminderlarger["New Zealand", mult="first"]) #time 0.001s
+gapminderlarger.dataframe <- as.data.frame(gapminderlarger)
+gapminderlarger.dataframe[gapminderlarger.dataframe$country=="New Zealand",][1,]
+system.time(gapminderlarger.dataframe[gapminderlarger.dataframe$country=="New Zealand",][1,]) #0.436s
+
+setkey(gapminderlarger, country, year)
+gapminderlarger[list("New Zealand", 2007)]
+system.time(gapminderlarger[list("New Zealand", 2007)]) #0.002s
+gapminderlarger.dataframe[gapminderlarger.dataframe$country=="New Zealand" & gapminderlarger.dataframe$year=="2007",]
+system.time(gapminderlarger.dataframe[gapminderlarger.dataframe$country=="New Zealand" & gapminderlarger.dataframe$year=="2007",]) #1.818s
+
+#by is faster too
+gapminderlarger[,sum(gdpPercap), year]
+system.time(gapminderlarger[,sum(gdpPercap), year]) #0.074s
+tapply(gapminderlarger.dataframe$gdpPercap,gapminderlarger.dataframe$year,sum)
+system.time(tapply(gapminderlarger.dataframe$gdpPercap,gapminderlarger.dataframe$year,sum)) #0.445s
+
+           
