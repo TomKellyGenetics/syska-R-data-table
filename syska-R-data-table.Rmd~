@@ -1,13 +1,8 @@
 ---
-output:
-  html_document:
-    keep_md: true
-#output: 
-#  pdf_document:
-#    keep_tex: true
+output: word_document
 ---
 ```{r global_options, include=FALSE}
-knitr::opts_chunk$set(fig.width=12, fig.height=8, fig.path="Figs/", warning=FALSE, message=FALSE)
+knitr::opts_chunk$set(fig.width=12, fig.heigth=8, fig.path="Figs/", warning=FALSE, message=FALSE)
 ```
 
 
@@ -15,7 +10,7 @@ knitr::opts_chunk$set(fig.width=12, fig.height=8, fig.path="Figs/", warning=FALS
 ## The Data Table package and various other ways to handle data in R
 
  - **Authors**: Tom Kelly
-- **Research field**: Bioinformatics / Computational Biology / Cancer Genomics
+ - **Research field**: Bioinformatics / Computataion Biology / Cancer Genomics
  - **Lesson Topic**: An introduction to various packages for file I/O and data manipulation in R, with comparision to base R (and compatibility with data frames), in terms of user-friendliness, performance in CPU-time, and memory usage. 
 
 ## Installation
@@ -52,7 +47,7 @@ ggplot(data = gapminderFiveYearData, aes(x = lifeExp, y = gdpPercap, color=conti
   geom_point()
 ```
 
-##Introducing Data Tables
+## Introducing Data Tables
 
 data table defaults to reading it's own data.table format
 ```{r}
@@ -131,7 +126,7 @@ It's so fast it tells you. Let's compare that with base R:
 ```{r}
 system.time(gapminderlarger.dataframe <- read.csv("gapminder-larger.csv", header=T))
 ```
-The same operation took much longer with base R, with larger files (or repeating this many times) that ~6x difference could mean a lot for your workflow. 
+The same operation took 57.203s with base R, with larger files (or repeating this many times) that 6x difference could mean a lot for your workflow. 
 
 FYI - there's also a "fast write" compatible with several file formats
 ```{r}
@@ -237,8 +232,7 @@ We can simply treat it as a data frame in many cases:
 ```{r}
 gapminderFiveYearData[1,]
 colnames(gapminderFiveYearData)
-head(gapminderFiveYearData$country)
-tail(gapminderFiveYearData$country)
+gapminderFiveYearData$country
 ```
 Data Table has a "Natural" Syntax
 
@@ -261,9 +255,8 @@ gapminderFiveYearData[c("New Zealand","Australia")] #by key (will be detailed la
 ```
 ###J: column selection
 ```{r}
-head(gapminderFiveYearData[,"country"]) #by names
-head(gapminderFiveYearData[,country]) #by column
-gapminderFiveYearData[,list(country, year, pop)] #by list
+gapminderFiveYearData[,"country"] #by names
+gapminderFiveYearData[,gapminderFiveYearData$country %in% c("New Zealand", "Australia", "Japan")] #by condition
 ```
 This allows operations to be performed on columns:
 ```{r}
@@ -323,8 +316,7 @@ tables()
 We can create a unique identifier as a key:
 ```{r}
 rowID <- paste(gapminderFiveYearData$country, gapminderFiveYearData$year)
-head(rowID)
-tail(head(rowID))
+rowID
 gapminderFiveYearData$rowID <- rowID
 gapminderFiveYearData
 setkey(gapminderFiveYearData, rowID)
@@ -367,7 +359,7 @@ Here's an example with multiple keys:
 setkey(gapminderlarger, country, year)
 gapminderlarger[list("New Zealand", 2007)]
 system.time(gapminderlarger[list("New Zealand", 2007)])
-head(gapminderlarger.dataframe[gapminderlarger.dataframe$country=="New Zealand" & gapminderlarger.dataframe$year=="2007",])
+gapminderlarger.dataframe[gapminderlarger.dataframe$country=="New Zealand" & gapminderlarger.dataframe$year=="2007",]
 system.time(gapminderlarger.dataframe[gapminderlarger.dataframe$country=="New Zealand" & gapminderlarger.dataframe$year=="2007",])
 ```
 
