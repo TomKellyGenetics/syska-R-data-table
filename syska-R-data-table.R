@@ -72,6 +72,9 @@ gapminderFiveYearDataCrop <- fread("gapminder-FiveYearData.tsv", header=T, col.n
 gapminderlarger <- fread("gapminder-larger.csv") #so fast it tells you (9-10s)
 #system.time(gapminderlarger <- read.csv("gapminder-larger.csv", header=T)) #the same operation took 57.203s with base R 
 
+#generate gapminder-large data
+source("gapminderlarger.R")
+
 #FYI - there's also a "fast write"
 fwrite(gapminderlarger, file="test.csv") #defaults to csv
 fwrite(gapminderlarger, file="test.tsv", sep="\t")
