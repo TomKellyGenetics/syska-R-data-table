@@ -1,10 +1,10 @@
 ---
-#output:
-#  html_document:
-#    keep_md: true
-output: 
-  pdf_document:
-    keep_tex: true
+output:
+  html_document:
+    keep_md: true
+#output: 
+#  pdf_document:
+#    keep_tex: true
 #output: word_document
 ---
 ```{r global_options, include=FALSE}
@@ -417,5 +417,5 @@ system.time(tapply(gapminderlarger.dataframe$gdpPercap,gapminderlarger.dataframe
 ```{r, include=FALSE}
 #export md to README
 system("cat README.short syska-R-data-table.md > README.md ")
-system("cat README.short syska-R-data-table.tex > README.tex ")
+system("cat README.short syska-R-data-table.tex > README.tex")
 ```
