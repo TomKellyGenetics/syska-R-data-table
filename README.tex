@@ -1,3 +1,14 @@
+Handling large data files in R: data.table and more!
+
+Run the following code in a bash or mac terminal to obtain a copy of this repository:
+
+`git clone git@github.com:TomKellyGenetics/syska-R-data-table.git`
+
+Lesson developed using the gapminder dataset (as used in Software Carpentry and Research Bazaar), data and examples of ggplot or pylr from this repository https://github.com/resbaz/r-novice-gapminder
+
+Materials developed at the University of Otago (Biochemistry department) by postgraduate students. This lesson can be followed with the commented R script, Rmarkdown document, or any preferred document produced by `knitr`.
+
+Uses a number of R packages in read/write files with benchmarking on file i/o and a comparison of data.table class to the data.frame on which it is based (and most R users are familiar with). Most of these packages can be installed on the fly on CRAN if network access is avaiable during the lesson, due to large dependencies we recommend install `devtools` and `feather` in advance along these features are only discussed in terms of benchmarking similar functionality in other packages. Large data files are used in the lesson to demonstrate the power and speed of various features, however these were not included the the repository on github due to limiting speed for lesson participants to clone the repository during the lesson. These large data files are constructed with rbind of many copies of the dataset used in the exercises, this demonstrates the power of these packages to deal with data files up to the scales of mega- or giga-bytes which are frequently encountered in Genomics or Bioinformatics analysis. 
 \documentclass[]{article}
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}
@@ -178,7 +189,7 @@ Install development version from GitHub (current version 1.9.7)
 \begin{verbatim}
 ## 
 ## The downloaded source packages are in
-##  '/tmp/RtmpnP1ImB/downloaded_packages'
+##  '/tmp/RtmpJQq9C7/downloaded_packages'
 \end{verbatim}
 
 \begin{Shaded}
@@ -547,8 +558,8 @@ files. Let's try it out on some larger datafiles:
 
 \begin{verbatim}
 ## 
-Read 59.2% of 1656288 rows
-Read 96.6% of 1656288 rows
+Read 53.1% of 1656288 rows
+Read 94.8% of 1656288 rows
 Read 1656288 rows and 11 (of 11) columns from 0.146 GB file in 00:00:04
 \end{verbatim}
 
@@ -595,10 +606,19 @@ really handy to know your code is working, and how long it will take.
 
 \begin{verbatim}
 ## 
-Read 36.5% of 6625152 rows
-Read 64.5% of 6625152 rows
-Read 91.9% of 6625152 rows
-Read 6625152 rows and 6 (of 6) columns from 0.321 GB file in 00:00:05
+Read 0.0% of 6625152 rows
+Read 14.3% of 6625152 rows
+Read 27.5% of 6625152 rows
+Read 38.5% of 6625152 rows
+Read 48.3% of 6625152 rows
+Read 50.7% of 6625152 rows
+Read 62.5% of 6625152 rows
+Read 72.5% of 6625152 rows
+Read 77.3% of 6625152 rows
+Read 85.9% of 6625152 rows
+Read 93.7% of 6625152 rows
+Read 95.1% of 6625152 rows
+Read 6625152 rows and 13 (of 13) columns from 0.702 GB file in 00:00:16
 \end{verbatim}
 
 It's so fast it tells you. Let's compare that with base R:
@@ -611,7 +631,7 @@ It's so fast it tells you. Let's compare that with base R:
 
 \begin{verbatim}
 ##    user  system elapsed 
-##  22.832   0.200  23.056
+##  60.276   0.740  61.083
 \end{verbatim}
 
 The same operation took much longer with base R, with larger files (or
@@ -637,7 +657,7 @@ They're also fast to write data, compared to base R:
 
 \begin{verbatim}
 ##    user  system elapsed 
-##  17.792   0.372  19.740
+##  26.776   0.760  28.427
 \end{verbatim}
 
 \begin{Shaded}
@@ -648,92 +668,8 @@ They're also fast to write data, compared to base R:
 
 \begin{verbatim}
 ##    user  system elapsed 
-##  38.164   0.296  39.153
+##  47.388   0.612  49.906
 \end{verbatim}
-
-\subsection{readr (Hadley Wickham and
-RStudio)}\label{readr-hadley-wickham-and-rstudio}
-
-Another package enables faster alternatives to existing read functions
-in base R: these work almost exactly the same as their base R
-counterparts.
-
-\begin{longtable}[c]{@{}lll@{}}
-\toprule
-\textbf{base R} & \textbf{readr}\tabularnewline
-\midrule
-\endhead
-spaced file & \texttt{read.table} & \texttt{read\_table}\tabularnewline
-fixed-width file & \texttt{read.fwf} & \texttt{read\_fwf}\tabularnewline
-comma-separated file & \texttt{read.csv} &
-\texttt{read\_csv}\tabularnewline
-semicolon-separated file & \texttt{read.csv2} &
-\texttt{read\_csv2}\tabularnewline
-tab-delimited file & \texttt{read.table} &
-\texttt{read\_tsv}\tabularnewline
-comma-separated file & \texttt{read.csv} &
-\texttt{read\_csv}\tabularnewline
-file or string \texttt{readLines} & \texttt{read\_lines} or
-\texttt{read\_file}\tabularnewline
-\bottomrule
-\end{longtable}
-
-Let's try it out on a space-delimited file:
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{library}\NormalTok{(}\StringTok{"readr"}\NormalTok{)}
-\KeywordTok{system.time}\NormalTok{(}\KeywordTok{read_table}\NormalTok{(}\StringTok{"gapminder-FiveYearData.txt"}\NormalTok{))}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-##    user  system elapsed 
-##   0.020   0.008   0.088
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{system.time}\NormalTok{(}\KeywordTok{read.table}\NormalTok{(}\StringTok{"gapminder-FiveYearData.txt"}\NormalTok{))}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-##    user  system elapsed 
-##   0.012   0.000   0.014
-\end{verbatim}
-
-Even on a small file \texttt{readr} is faster than base R. This also
-holds for larger csv files:
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{system.time}\NormalTok{(}\KeywordTok{read_csv}\NormalTok{(}\StringTok{"gapminder-larger.csv"}\NormalTok{))}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-##    user  system elapsed 
-##   4.304   0.128   4.437
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{system.time}\NormalTok{(}\KeywordTok{read.csv}\NormalTok{(}\StringTok{"gapminder-larger.csv"}\NormalTok{))}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-##    user  system elapsed 
-##  22.892   0.412  23.335
-\end{verbatim}
-
-\texttt{readr} also has a handy progress bar allowign us to monitor
-progress. There is an equivalent \texttt{readxl} package with a
-\texttt{read\_excel} function compatible with xls or xlsx files and
-enables sheet selection. This is a relatively new alternative to the
-\texttt{xlsx} package and it's \texttt{read.xlsx} function which are
-difficult to work with (as it is java and perl dependent).
 
 \subsection{Another solution:
 bigmemory}\label{another-solution-bigmemory}
@@ -764,7 +700,7 @@ Let's try out bigmemory, first we convert an R data matrix into a
 \begin{verbatim}
 ## An object of class "big.matrix"
 ## Slot "address":
-## <pointer: 0x33f5880>
+## <pointer: 0x21d1e380>
 \end{verbatim}
 
 \begin{Shaded}
@@ -851,7 +787,7 @@ These are designed to be efficient for memory - how fast are they?
 
 \begin{verbatim}
 ##    user  system elapsed 
-##  12.724   0.192  12.934
+##  28.996   0.428  30.145
 \end{verbatim}
 
 \begin{Shaded}
@@ -927,7 +863,7 @@ Did I mention it's crazy fast?
 
 \begin{verbatim}
 ##    user  system elapsed 
-##   0.312   0.212   1.319
+##   1.268   0.400   4.029
 \end{verbatim}
 
 \begin{Shaded}
@@ -938,7 +874,7 @@ Did I mention it's crazy fast?
 
 \begin{verbatim}
 ##    user  system elapsed 
-##   0.328   0.036   0.367
+##   5.340   0.556  15.636
 \end{verbatim}
 
 Or install and run in Python:
@@ -959,44 +895,13 @@ or R.
 
 \begin{longtable}[c]{@{}llll@{}}
 \toprule
-\begin{minipage}[b]{0.05\columnwidth}\raggedright\strut
-\textbf{base R}
-\strut\end{minipage} &
-\begin{minipage}[b]{0.05\columnwidth}\raggedright\strut
-\textbf{data table}
-\strut\end{minipage} &
-\begin{minipage}[b]{0.05\columnwidth}\raggedright\strut
-\textbf{readr}
-\strut\end{minipage} &
-\begin{minipage}[b]{0.05\columnwidth}\raggedright\strut
-\textbf{bigmemory}
-\strut\end{minipage}\tabularnewline
+\textbf{base R} & \textbf{data table} & \textbf{bigmemory} &
+\textbf{feather}\tabularnewline
 \midrule
 \endhead
-\begin{minipage}[t]{0.05\columnwidth}\raggedright\strut
-\texttt{read.csv}
-\strut\end{minipage} &
-\begin{minipage}[t]{0.05\columnwidth}\raggedright\strut
-\texttt{fread}
-\strut\end{minipage} &
-\begin{minipage}[t]{0.05\columnwidth}\raggedright\strut
-\texttt{read\_csv}
-\strut\end{minipage} &
-\begin{minipage}[t]{0.05\columnwidth}\raggedright\strut
-\texttt{read.big.matrix}
-\strut\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.05\columnwidth}\raggedright\strut
-52.203s
-\strut\end{minipage} &
-\begin{minipage}[t]{0.05\columnwidth}\raggedright\strut
-8.154s
-\strut\end{minipage} &
-\begin{minipage}[t]{0.05\columnwidth}\raggedright\strut
-11.120s
-\strut\end{minipage} &
-\begin{minipage}[t]{0.05\columnwidth}\raggedright\strut
-28.647s
-\strut\end{minipage}\tabularnewline
+\texttt{read.csv} & \texttt{fread} & \texttt{read.big.matrix} &
+\texttt{read\_feather}\tabularnewline
+52.203s & 8.154s & 28.647s & 2.414s\tabularnewline
 \bottomrule
 \end{longtable}
 
@@ -1485,7 +1390,7 @@ As you can see, these results lend well to data we can tabulate or plot:
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{Figs/unnamed-chunk-32-1.pdf}\\
+\includegraphics{Figs/unnamed-chunk-29-1.pdf}\\
 New and Shiny: by=.EACHI enables more explicit control of the ``by''
 feature. We could manually pull out years or countries we wish to deal
 with individually:
@@ -1647,17 +1552,17 @@ default to keys are given:
 \end{Shaded}
 
 \begin{verbatim}
-##      NAME                           NROW NCOL  MB
-## [1,] gapminderFiveYearData         1,704    6   1
-## [2,] gapminderFiveYearDataCrop     1,000    6   1
-## [3,] gapminderlarge            1,656,288   11 294
-## [4,] gapminderlarger           6,625,152    6 279
-##      COLS                                                        KEY
-## [1,] country,year,pop,continent,lifeExp,gdpPercap                   
-## [2,] place,time,people,big place,life,money                         
-## [3,] V1,V1,V1,V1,V1,country,year,pop,continent,lifeExp,gdpPercap    
-## [4,] country,year,pop,continent,lifeExp,gdpPercap                   
-## Total: 575MB
+##      NAME                           NROW NCOL    MB
+## [1,] gapminderFiveYearData         1,704    6     1
+## [2,] gapminderFiveYearDataCrop     1,000    6     1
+## [3,] gapminderlarge            1,656,288   11   294
+## [4,] gapminderlarger           6,625,152   13 1,248
+##      COLS                                                              KEY
+## [1,] country,year,pop,continent,lifeExp,gdpPercap                         
+## [2,] place,time,people,big place,life,money                               
+## [3,] V1,V1,V1,V1,V1,country,year,pop,continent,lifeExp,gdpPercap          
+## [4,] V1,V1,V1,V1,V1,V1,V1,country,year,pop,continent,lifeExp,gdpPercap    
+## Total: 1,544MB
 \end{verbatim}
 
 We can create a unique identifier as a key:
@@ -1727,17 +1632,22 @@ We can create a unique identifier as a key:
 \end{Shaded}
 
 \begin{verbatim}
-##      NAME                           NROW NCOL  MB
-## [1,] gapminderFiveYearData         1,704    7   1
-## [2,] gapminderFiveYearDataCrop     1,000    6   1
-## [3,] gapminderlarge            1,656,288   11 294
-## [4,] gapminderlarger           6,625,152    6 279
-##      COLS                                                        KEY  
-## [1,] country,year,pop,continent,lifeExp,gdpPercap,rowID          rowID
+##      NAME                           NROW NCOL    MB
+## [1,] gapminderFiveYearData         1,704    7     1
+## [2,] gapminderFiveYearDataCrop     1,000    6     1
+## [3,] gapminderlarge            1,656,288   11   294
+## [4,] gapminderlarger           6,625,152   13 1,248
+##      COLS                                                             
+## [1,] country,year,pop,continent,lifeExp,gdpPercap,rowID               
 ## [2,] place,time,people,big place,life,money                           
 ## [3,] V1,V1,V1,V1,V1,country,year,pop,continent,lifeExp,gdpPercap      
-## [4,] country,year,pop,continent,lifeExp,gdpPercap                     
-## Total: 575MB
+## [4,] V1,V1,V1,V1,V1,V1,V1,country,year,pop,continent,lifeExp,gdpPercap
+##      KEY  
+## [1,] rowID
+## [2,]      
+## [3,]      
+## [4,]      
+## Total: 1,544MB
 \end{verbatim}
 
 We can search rows \texttt{i} for this key:
@@ -1848,7 +1758,7 @@ Queries in data.tables aren't just \emph{easier} they're \textbf{faster}
 
 \begin{verbatim}
 ##    user  system elapsed 
-##   0.000   0.000   0.001
+##       0       0       0
 \end{verbatim}
 
 Ok, that didn't seem that different. They're powerful with larger
@@ -1863,8 +1773,10 @@ dataframes and datatables.
 \end{Shaded}
 
 \begin{verbatim}
-##        country year     pop continent lifeExp gdpPercap
-## 1: New Zealand 1952 1994794   Oceania   69.39  10556.58
+##      V1 V1.1 V1.2 V1.3 V1.4 V1.5 V1.6     country year     pop continent
+## 1: 1093 1093 1093 1093 1093 1093 1093 New Zealand 1952 1994794   Oceania
+##    lifeExp gdpPercap
+## 1:   69.39  10556.58
 \end{verbatim}
 
 \begin{Shaded}
@@ -1886,8 +1798,10 @@ dataframes and datatables.
 \end{Shaded}
 
 \begin{verbatim}
-##             country year     pop continent lifeExp gdpPercap
-## 4245697 New Zealand 1952 1994794   Oceania   69.39  10556.58
+##           V1   V1   V1   V1   V1   V1   V1     country year     pop
+## 4245697 1093 1093 1093 1093 1093 1093 1093 New Zealand 1952 1994794
+##         continent lifeExp gdpPercap
+## 4245697   Oceania   69.39  10556.58
 \end{verbatim}
 
 \begin{Shaded}
@@ -1898,7 +1812,7 @@ dataframes and datatables.
 
 \begin{verbatim}
 ##    user  system elapsed 
-##   0.248   0.000   0.247
+##   0.312   0.124   0.439
 \end{verbatim}
 
 Here's an example with multiple keys:
@@ -1911,18 +1825,30 @@ Here's an example with multiple keys:
 \end{Shaded}
 
 \begin{verbatim}
-##           country year     pop continent lifeExp gdpPercap
-##    1: New Zealand 2007 4115771   Oceania  80.204  25185.01
-##    2: New Zealand 2007 4115771   Oceania  80.204  25185.01
-##    3: New Zealand 2007 4115771   Oceania  80.204  25185.01
-##    4: New Zealand 2007 4115771   Oceania  80.204  25185.01
-##    5: New Zealand 2007 4115771   Oceania  80.204  25185.01
-##   ---                                                     
-## 3884: New Zealand 2007 4115771   Oceania  80.204  25185.01
-## 3885: New Zealand 2007 4115771   Oceania  80.204  25185.01
-## 3886: New Zealand 2007 4115771   Oceania  80.204  25185.01
-## 3887: New Zealand 2007 4115771   Oceania  80.204  25185.01
-## 3888: New Zealand 2007 4115771   Oceania  80.204  25185.01
+##            V1    V1.1    V1.2   V1.3   V1.4  V1.5 V1.6     country year
+##    1:    1104    1104    1104   1104   1104  1104 1104 New Zealand 2007
+##    2:    2808    2808    2808   2808   2808  2808 2808 New Zealand 2007
+##    3:    4512    4512    4512   4512   4512  4512 4512 New Zealand 2007
+##    4:    6216    6216    6216   6216   6216  6216 6216 New Zealand 2007
+##    5:    7920    7920    7920   7920   7920  7920 7920 New Zealand 2007
+##   ---                                                                  
+## 3884: 6617736 3305160 1648872 820728 820728 84600 2808 New Zealand 2007
+## 3885: 6619440 3306864 1650576 822432 822432 86304 4512 New Zealand 2007
+## 3886: 6621144 3308568 1652280 824136 824136 88008 6216 New Zealand 2007
+## 3887: 6622848 3310272 1653984 825840 825840 89712 7920 New Zealand 2007
+## 3888: 6624552 3311976 1655688 827544 827544 91416 9624 New Zealand 2007
+##           pop continent lifeExp gdpPercap
+##    1: 4115771   Oceania  80.204  25185.01
+##    2: 4115771   Oceania  80.204  25185.01
+##    3: 4115771   Oceania  80.204  25185.01
+##    4: 4115771   Oceania  80.204  25185.01
+##    5: 4115771   Oceania  80.204  25185.01
+##   ---                                    
+## 3884: 4115771   Oceania  80.204  25185.01
+## 3885: 4115771   Oceania  80.204  25185.01
+## 3886: 4115771   Oceania  80.204  25185.01
+## 3887: 4115771   Oceania  80.204  25185.01
+## 3888: 4115771   Oceania  80.204  25185.01
 \end{verbatim}
 
 \begin{Shaded}
@@ -1933,7 +1859,7 @@ Here's an example with multiple keys:
 
 \begin{verbatim}
 ##    user  system elapsed 
-##   0.004   0.000   0.001
+##   0.000   0.000   0.001
 \end{verbatim}
 
 \begin{Shaded}
@@ -1943,13 +1869,20 @@ Here's an example with multiple keys:
 \end{Shaded}
 
 \begin{verbatim}
-##             country year     pop continent lifeExp gdpPercap
-## 4245708 New Zealand 2007 4115771   Oceania  80.204  25185.01
-## 4245720 New Zealand 2007 4115771   Oceania  80.204  25185.01
-## 4245732 New Zealand 2007 4115771   Oceania  80.204  25185.01
-## 4245744 New Zealand 2007 4115771   Oceania  80.204  25185.01
-## 4245756 New Zealand 2007 4115771   Oceania  80.204  25185.01
-## 4245768 New Zealand 2007 4115771   Oceania  80.204  25185.01
+##           V1   V1   V1   V1   V1   V1   V1     country year     pop
+## 4245708 1104 1104 1104 1104 1104 1104 1104 New Zealand 2007 4115771
+## 4245720 2808 2808 2808 2808 2808 2808 2808 New Zealand 2007 4115771
+## 4245732 4512 4512 4512 4512 4512 4512 4512 New Zealand 2007 4115771
+## 4245744 6216 6216 6216 6216 6216 6216 6216 New Zealand 2007 4115771
+## 4245756 7920 7920 7920 7920 7920 7920 7920 New Zealand 2007 4115771
+## 4245768 9624 9624 9624 9624 9624 9624 9624 New Zealand 2007 4115771
+##         continent lifeExp gdpPercap
+## 4245708   Oceania  80.204  25185.01
+## 4245720   Oceania  80.204  25185.01
+## 4245732   Oceania  80.204  25185.01
+## 4245744   Oceania  80.204  25185.01
+## 4245756   Oceania  80.204  25185.01
+## 4245768   Oceania  80.204  25185.01
 \end{verbatim}
 
 \begin{Shaded}
@@ -1960,7 +1893,7 @@ Here's an example with multiple keys:
 
 \begin{verbatim}
 ##    user  system elapsed 
-##   1.744   0.020   1.762
+##   1.888   0.020   1.910
 \end{verbatim}
 
 \texttt{by} is faster than a simliar operation on dataframes too:
@@ -1995,7 +1928,7 @@ Here's an example with multiple keys:
 
 \begin{verbatim}
 ##    user  system elapsed 
-##   0.076   0.000   0.076
+##   0.076   0.000   0.073
 \end{verbatim}
 
 \begin{Shaded}
@@ -2019,7 +1952,7 @@ Here's an example with multiple keys:
 
 \begin{verbatim}
 ##    user  system elapsed 
-##   0.472   0.004   0.478
+##   0.444   0.016   0.460
 \end{verbatim}
 
 \end{document}
